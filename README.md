@@ -174,13 +174,11 @@ adb forward tcp:1313 tcp:1313
 API keys are populated in `constants/constants.go` and are used to fetch prices from external services from your local environment. 
 Make sure to add these to your environment variables before running the server (either via .bashrc or systemd service files).
 ```
-NOMICS_API_KEY=
 LCW_API_KEY=
 GECKO_API_KEY=
 PAPRIKA_API_KEY=
 ```
 
-Note: Nomics is defunct. Only LCW api keys are functional yet (Gecko and Paprika run without a key for now)
 
 
 #### Building price service only
