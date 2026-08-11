@@ -4,7 +4,8 @@ Custom mm2 (AtomicDEX) tooling that bundles:
 
 - an interactive CLI to drive local mm2 nodes,
 - a reusable HTTP server that can start/stop market maker bots, and
-- a price aggregation service that feeds on Binance, Coingecko, CoinPaprika, etc.
+- a price aggregation service that feeds on Binance, Coingecko, CoinPaprika,
+  LiveCoinWatch, Gleec CEX, etc.
 
 Use it to bootstrap simple market-making strategies, integrate the server into
 desktop or mobile apps, or operate a standalone price oracle.
@@ -191,6 +192,36 @@ go build -o mm2_tools_server_bin cmd/mm2_tools_server/mm2_tools_server.go
 ```
 
 Set `-only_price_service=true` to disable the CLI features.
+
+---
+
+## Gleec CEX Price Provider
+
+`external_services/gleeccex_service.go` polls the public API of the Gleec
+exchange (<https://api.exchange.gleec.com/#prices>, HitBTC v3 compatible) every
+`constants.GPricesLoopTime` and **only serves the `GLEEC` ticker** - every other
+coin is answered as not found so the generic price service falls back as usual.
+
+| Field | Source |
+| --- | --- |
+| `last_price` | `GET /api/3/public/price/rate?from=GLEEC,BTC&to=USDT` (falls back to the last trade of `GLEECUSDT`) |
+| `volume24h` | `GET /api/3/public/ticker?symbols=GLEECUSDT,GLEECBTC`, `volume_quote` of both markets converted to USD |
+| `change_24h` | same ticker call, `(last - open) / open * 100` of `GLEECUSDT` |
+
+It is queried last, after LiveCoinWatch, in `RetrieveUSDValIfSupported`,
+`RetrieveVolume24h` and `RetrievePercentChange24h`, and reports itself as
+`gleeccex` in the `*_provider` fields. No API key is needed.
+
+A standalone checker renders what the provider would produce, using the very
+same code path than `GET /api/v2/tickers?expire_at=`:
+
+```bash
+go build -o gleeccex_price_check cmd/gleeccex_price_check/gleeccex_price_check.go
+./gleeccex_price_check -cfg coins_config.json -expire_at 21600
+```
+
+Without `-cfg` (or when the file is missing) it falls back to a small embedded
+config holding GLEEC plus two control coins.
 
 ---
 
