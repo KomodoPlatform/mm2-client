@@ -18,6 +18,8 @@ func LaunchPriceServices() {
 		glg.Info("Start LiveCoinWatch service")
 		go StartLcwService()
 	}
+	glg.Info("Starting Gleec CEX price service")
+	go StartGleecCexService()
 	constants.GPricesServicesRunning = true
 }
 

@@ -38,6 +38,12 @@ func RetrieveUSDValIfSupported(coin string, expirePriceValidity int) (string, st
 	//! LCW
 	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
 		val, date, provider = LcwRetrieveUSDValIfSupported(coin)
+		elapsed = helpers.DateToTimeElapsed(date)
+	}
+
+	//! Gleec CEX (GLEEC only)
+	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
+		val, date, provider = GleecCexRetrieveUSDValIfSupported(coin)
 	}
 
 	//! Verification
@@ -83,6 +89,9 @@ func RetrieveVolume24h(coin string) (string, string, string) {
 	if volume == "0" {
 		volume, date, provider = LcwGetTotalVolume(coin)
 	}
+	if volume == "0" {
+		volume, date, provider = GleecCexGetTotalVolume(coin)
+	}
 	if volume != "0" {
 		return volume, date, provider
 	} else {
@@ -111,6 +120,10 @@ func RetrievePercentChange24h(coin string) (string, string, string) {
 
 	if change24h == "0" {
 		change24h, date, provider = LcwGetChange24h(coin)
+	}
+
+	if change24h == "0" {
+		change24h, date, provider = GleecCexGetChange24h(coin)
 	}
 
 	if change24h != "0" {
