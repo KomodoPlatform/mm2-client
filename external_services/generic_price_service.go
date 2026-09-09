@@ -1,8 +1,16 @@
 package external_services
 
 import (
+	"math"
 	"mm2_client/helpers"
+	"strconv"
 )
+
+// isUsablePrice treats zero and missing prices alike, regardless of formatting.
+func isUsablePrice(value string) bool {
+	price, err := strconv.ParseFloat(value, 64)
+	return err == nil && price > 0 && !math.IsNaN(price) && !math.IsInf(price, 0)
+}
 
 func RetrieveUSDValIfSupported(coin string, expirePriceValidity int) (string, string, string) {
 	//! Binance
@@ -12,45 +20,44 @@ func RetrieveUSDValIfSupported(coin string, expirePriceValidity int) (string, st
 	expirePriceValidityF := float64(expirePriceValidity)
 
 	//! Forex
-	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
+	if !isUsablePrice(val) || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
 		val, date, provider = ForexRetrieveUSDValIfSupported(coin)
-		if val != "0" {
+		if isUsablePrice(val) {
 			return val, date, provider
 		}
 	}
 
-
 	//! Gecko
-	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
+	if !isUsablePrice(val) || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
 		val, date, provider = CoingeckoRetrieveUSDValIfSupported(coin)
 		elapsed = helpers.DateToTimeElapsed(date)
 	}
 
 	//! Paprika
-	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
+	if !isUsablePrice(val) || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
 		val, date, provider = CoinpaprikaRetrieveUSDValIfSupported(coin)
-		if val == "0" {
+		if !isUsablePrice(val) {
 			val, date, provider = CoinpaprikaRetrieveUSDValIfSupported(helpers.RetrieveMainTicker(coin))
 		}
 		elapsed = helpers.DateToTimeElapsed(date)
 	}
 
 	//! LCW
-	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
+	if !isUsablePrice(val) || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
 		val, date, provider = LcwRetrieveUSDValIfSupported(coin)
 		elapsed = helpers.DateToTimeElapsed(date)
 	}
 
 	//! Gleec CEX (GLEEC only)
-	if val == "0" || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
+	if !isUsablePrice(val) || (expirePriceValidity > 0 && elapsed > expirePriceValidityF) {
 		val, date, provider = GleecCexRetrieveUSDValIfSupported(coin)
 	}
 
 	//! Verification
-	if val != "0" {
+	if isUsablePrice(val) {
 		return val, date, provider
 	} else {
-		return val, date, "unknown"
+		return "0", date, "unknown"
 	}
 }
 
@@ -59,25 +66,25 @@ func RetrieveCEXRatesFromPair(base string, rel string) (string, bool, string, st
 	val, calculated, date, provider := BinanceRetrieveCEXRatesFromPair(base, rel)
 
 	//! LWC
-	if val == "0" {
+	if !isUsablePrice(val) {
 		val, calculated, date, provider = LcwRetrieveCEXRatesFromPair(base, rel)
 	}
 
 	//! Gecko
-	if val == "0" {
+	if !isUsablePrice(val) {
 		val, calculated, date, provider = CoingeckoRetrieveCEXRatesFromPair(base, rel)
 	}
 
 	//! Paprika
-	if val == "0" {
+	if !isUsablePrice(val) {
 		val, calculated, date, provider = CoinpaprikaRetrieveCEXRatesFromPair(base, rel)
 	}
 
 	//! Verification
-	if val != "0" {
+	if isUsablePrice(val) {
 		return val, calculated, date, provider
 	} else {
-		return val, calculated, date, "unknown"
+		return "0", calculated, date, "unknown"
 	}
 }
 

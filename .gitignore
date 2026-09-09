@@ -1,4 +1,5 @@
 # Build and config files
+.env
 mm2_tools_server_bin
 prices_komodo_earth
 coins_config.json

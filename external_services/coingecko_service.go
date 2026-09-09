@@ -183,7 +183,7 @@ func CoingeckoGetChange24h(coin string) (string, string, string) {
 		val, ok := CoingeckoPriceRegistry.Load(cfg.CoingeckoID)
 		if ok {
 			resp := val.(CoingeckoAnswer)
-			if resp.PriceChangePercentage24H != nil {
+			if resp.PriceChangePercentage24HInCurrency != nil {
 				changePercent24h = fmt.Sprintf("%f", *resp.PriceChangePercentage24HInCurrency)
 			}
 			dateStr = resp.LastUpdated

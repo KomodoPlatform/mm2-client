@@ -159,7 +159,9 @@ func LcwGetChange24h(coin string) (string, string, string) {
 		val, ok := LcwPriceRegistry.Load(cfg.LcwId)
 		if ok {
 			resp := val.(LcwAnswer)
-			changePercent24h = fmt.Sprintf("%.10f", resp.Delta.Day)
+			if resp.Delta != nil {
+				changePercent24h = fmt.Sprintf("%.10f", resp.Delta.Day)
+			}
 		}
 		return changePercent24h, dateStr, "livecoinwatch"
 	}
